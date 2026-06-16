@@ -20,7 +20,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Layout Layout */
         .sidebar { width: 260px; background: var(--sidebar-color); border-right: 1px solid #2d2f44; display: flex; flex-direction: column; height: 100%; }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #2d2f44; background: linear-gradient(135deg, #161722, #251329); }
         .sidebar-header h1 { color: var(--accent-color); font-size: 20px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(233,69,96,0.4); }
@@ -42,7 +41,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Shared UI Components */
         .controls { display: flex; gap: 12px; margin-top: 25px; align-items: center; justify-content: center; flex-wrap: wrap; width: 100%; }
         .input-group { display: flex; align-items: center; background: #222533; border: 1px solid #3d415c; border-radius: 6px; padding: 2px 8px; }
         .input-group label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-right: 8px; font-weight: bold; }
@@ -59,61 +57,47 @@
         .opt-btn:hover { border-color: var(--neon-blue); background: rgba(0,240,255,0.05); }
         .opt-btn.selected { background: var(--neon-blue); color: #000; border-color: var(--neon-blue); }
 
-        /* --- GAME SPECIFIC GRAPHICS --- */
-        /* Slots */
         .slots-row { display: flex; gap: 15px; margin: 15px 0; }
         .slot-reel { width: 90px; height: 110px; background: #fff; color: #000; font-size: 55px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 4px solid #ffd700; box-shadow: inset 0 0 15px rgba(0,0,0,0.4); }
-        /* Blackjack */
         .bj-table { width: 100%; display: flex; flex-direction: column; gap: 15px; }
         .card-area { background: #0b3d26; padding: 15px; border-radius: 8px; min-height: 110px; border: 1px solid #145c3b; }
         .card-area h4 { font-size: 13px; color: #8fae9e; text-transform: uppercase; margin-bottom: 5px; }
         .card-display { display: flex; gap: 8px; flex-wrap: wrap; }
         .card { width: 55px; height: 80px; background: #fff; color: #000; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; padding: 6px; font-weight: bold; font-size: 16px; box-shadow: 2px 4px 8px rgba(0,0,0,0.3); }
         .card.red { color: #e94560; }
-        /* Roulette / Wheel base */
         .wheel-big { font-size: 48px; margin: 20px 0; font-weight: bold; height: 70px; }
-        /* Video Poker */
         .poker-hold-label { font-size: 11px; text-transform: uppercase; text-align: center; color: var(--accent-color); font-weight: bold; visibility: hidden; margin-top: 4px; }
         .poker-card-container { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .poker-card-container.holding .poker-hold-label { visibility: visible; }
-        /* Craps / Dice display */
         .dice-box { display: flex; gap: 20px; margin: 15px 0; }
         .die { width: 60px; height: 60px; background: #fff; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: #000; font-size: 32px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        /* Plinko / Pachinko elements */
         canvas.game-canvas { background: #11121a; border-radius: 6px; border: 1px solid #2d2f44; max-width: 100%; }
-        /* Shell Game */
         .shell-container { display: flex; gap: 40px; margin: 20px 0; }
         .shell { font-size: 50px; cursor: pointer; transition: 0.2s; }
         .shell:hover { transform: translateY(-10px); }
-        /* Keno / Lottery Board */
         .keno-board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; width: 100%; max-width: 450px; }
         .keno-cell { aspect-ratio: 1; background: #222533; border: 1px solid #3d415c; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 4px; cursor: pointer; color: #fff; }
         .keno-cell.selected { background: var(--neon-blue); color: #000; border-color: var(--neon-blue); }
         .keno-cell.hit { background: var(--neon-green) !important; color: #000; }
         .keno-cell.miss { background: var(--accent-color); color: #fff; }
-        /* Mines Grid */
         .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 280px; height: 280px; }
         .mine-tile { background: #222533; border-radius: 6px; border: 1px solid #3d415c; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; transition: 0.15s; }
         .mine-tile:hover { background: #2c2f42; }
         .mine-tile.revealed-safe { background: rgba(0,255,102,0.2); border-color: var(--neon-green); }
         .mine-tile.revealed-mine { background: rgba(233,69,96,0.3); border-color: var(--accent-color); }
-        /* Wheel of Fortune Colors */
         .wof-sector { padding: 10px; border-radius: 4px; font-weight: bold; text-align: center; color: #000; }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR NAVIGATION -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h1>🎰 Casino</h1>
         </div>
         <div class="games-menu" id="side-menu">
-            <!-- Programmatically filled for cleaner files -->
         </div>
     </div>
 
-    <!-- MAIN GAME WORKSPACE -->
     <div class="main-content">
         <header>
             <div class="game-title-display" id="active-game-title">Slots</div>
@@ -122,7 +106,6 @@
 
         <div class="stage">
             
-            <!-- GAME 1: SLOTS -->
             <div id="g-slots" class="game-container active">
                 <div class="slots-row">
                     <div id="reel1" class="slot-reel">🍒</div>
@@ -133,7 +116,6 @@
                 <div id="slots-fb" class="feedback">Try your luck! Three matching symbols triggers the jackpot.</div>
             </div>
 
-            <!-- GAME 2: BLACKJACK -->
             <div id="g-blackjack" class="game-container">
                 <div class="bj-table">
                     <div class="card-area"><h4>Dealer Hand <span id="bj-d-score"></span></h4><div id="bj-d-cards" class="card-display"></div></div>
@@ -146,7 +128,6 @@
                 <div id="bj-fb" class="feedback">Get closest to 21 without going over!</div>
             </div>
 
-            <!-- GAME 3: ROULETTE -->
             <div id="g-roulette" class="game-container">
                 <div id="roulette-wheel" class="wheel-big">❓</div>
                 <div class="grid-options">
@@ -158,7 +139,6 @@
                 <div id="roulette-fb" class="feedback">Select a color profile to wager your chips.</div>
             </div>
 
-            <!-- GAME 4: BACCARAT -->
             <div id="g-baccarat" class="game-container">
                 <div class="grid-options">
                     <button id="bac-p" class="opt-btn" onclick="selectBaccaratSide('Player')">Player (2x)</button>
@@ -169,7 +149,6 @@
                 <div id="baccarat-fb" class="feedback">Bet on which hand finishes closest to 9.</div>
             </div>
 
-            <!-- GAME 5: VIDEO POKER -->
             <div id="g-videopoker" class="game-container">
                 <div class="card-display" style="gap:15px; margin-bottom:10px;">
                     <div class="poker-card-container" onclick="togglePokerHold(0)"><div id="vp-c0" class="card"></div><div class="poker-hold-label">HOLD</div></div>
@@ -185,7 +164,6 @@
                 <div id="vp-fb" class="feedback">Standard 5-Card Draw. Click on individual cards to hold them before drawing!</div>
             </div>
 
-            <!-- GAME 6: CRAPS -->
             <div id="g-craps" class="game-container">
                 <div class="dice-box"><div id="die1" class="die">⚀</div><div id="die2" class="die">⚀</div></div>
                 <div class="grid-options">
@@ -196,14 +174,12 @@
                 <div id="craps-fb" class="feedback">Choose your pass state line to cast the dice.</div>
             </div>
 
-            <!-- GAME 7: KENO -->
             <div id="g-keno" class="game-container">
                 <div class="keno-board" id="keno-grid"></div>
                 <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="keno-bet" value="10"></div><button class="action-btn" onclick="drawKeno()">Draw 20 Numbers</button></div>
                 <div id="keno-fb" class="feedback">Pick up to 10 numbers from the board to match the lottery draws.</div>
             </div>
 
-            <!-- GAME 8: CRASH -->
             <div id="g-crash" class="game-container">
                 <div id="crash-multiplier" style="font-size:55px; font-weight:bold; color:var(--neon-green); margin:20px 0;">1.00x</div>
                 <div class="controls">
@@ -213,14 +189,12 @@
                 <div id="crash-fb" class="feedback">Cash out before the rocket crashes to keep your compound multiplier!</div>
             </div>
 
-            <!-- GAME 9: WHEEL OF FORTUNE -->
             <div id="g-wof" class="game-container">
                 <div id="wof-wheel" class="wheel-big">✨</div>
                 <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="wof-bet" value="10"></div><button class="action-btn" onclick="spinWOF()">Spin Wheel</button></div>
                 <div id="wof-fb" class="feedback">Spin to land on dynamic multi-payout sectors or flat bankrupt slots.</div>
             </div>
 
-            <!-- GAME 10: MINES -->
             <div id="g-mines" class="game-container">
                 <div class="mines-grid" id="mines-board"></div>
                 <div class="controls">
@@ -230,7 +204,6 @@
                 <div id="mines-fb" class="feedback">Uncover hidden dynamic safe tiles. Hit a mine and you drop the bag.</div>
             </div>
 
-            <!-- GAME 11: HI-LO -->
             <div id="g-hilo" class="game-container">
                 <div id="hilo-card" class="card" style="width:80px; height:120px; font-size:24px; margin-bottom:15px;"></div>
                 <div class="controls" id="hilo-ctrls-start"><div class="input-group"><label>Bet</label><input type="number" id="hilo-bet" value="10"></div><button class="action-btn" onclick="startHilo()">Buy In</button></div>
@@ -238,14 +211,12 @@
                 <div id="hilo-fb" class="feedback">Predict if the hidden card value is higher or lower than the target card.</div>
             </div>
 
-            <!-- GAME 12: PLINKO -->
             <div id="g-plinko" class="game-container">
                 <canvas id="plinko-canvas" class="game-canvas" width="400" height="300"></canvas>
                 <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="plinko-bet" value="10"></div><button class="action-btn" onclick="dropPlinko()">Drop Ball</button></div>
                 <div id="plinko-fb" class="feedback">Drop chips past landing pins into reward bottom bins.</div>
             </div>
 
-            <!-- GAME 13: SHELL GAME -->
             <div id="g-shell" class="game-container">
                 <div class="shell-container">
                     <div class="shell" onclick="liftShell(0)">🥛</div>
@@ -256,7 +227,6 @@
                 <div id="shell-fb" class="feedback">Track the diamond hidden under one of the three flipped cups.</div>
             </div>
 
-            <!-- GAME 14: DICE CHANCE -->
             <div id="g-dicechance" class="game-container">
                 <div style="font-size:20px; margin-bottom:15px;">Target Roll Over: <span id="dc-target-val" style="color:var(--neon-blue); font-weight:bold;">50</span></div>
                 <input type="range" id="dc-range" min="5" max="95" value="50" style="width:80%; margin-bottom:20px;" oninput="updateDiceChancePayout()">
@@ -265,7 +235,6 @@
                 <div id="dc-fb" class="feedback">Slide the probability target to adjust your own custom risk profile.</div>
             </div>
 
-            <!-- GAME 15: COIN FLIP -->
             <div id="g-coinflip" class="game-container">
                 <div id="coin-graphic" style="width:100px; height:100px; background:#ffd700; color:#000; font-weight:bold; font-size:20px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-bottom:20px; border:4px dashed #b89700;">HEADS</div>
                 <div class="grid-options" style="max-width:300px;"><button id="coin-h" class="opt-btn" onclick="selectCoinSide('Heads')">Heads</button><button id="coin-t" class="opt-btn" onclick="selectCoinSide('Tails')">Tails</button></div>
@@ -273,7 +242,6 @@
                 <div id="coin-fb" class="feedback">Call 50/50 heads or tails selections.</div>
             </div>
 
-            <!-- GAME 16: RED OR BLACK CARDS -->
             <div id="g-redblack" class="game-container">
                 <div id="rb-card-display" class="card" style="width:80px; height:120px; font-size:24px; margin-bottom:15px; visibility:hidden;"></div>
                 <div class="grid-options" style="max-width:300px;"><button id="rb-r" class="opt-btn" style="color:#e94560" onclick="selectRBSide('Red')">Red Card</button><button id="rb-b" class="opt-btn" onclick="selectRBSide('Black')">Black Card</button></div>
@@ -281,14 +249,12 @@
                 <div id="rb-fb" class="feedback">Guess the uniform color classification of the next random deck card drawn.</div>
             </div>
 
-            <!-- GAME 17: ROCK PAPER SCISSORS -->
             <div id="g-rps" class="game-container">
                 <div class="grid-options" style="max-width:320px;"><button id="rps-r" class="opt-btn" onclick="selectRPS('Rock')">✊ Rock</button><button id="rps-p" class="opt-btn" onclick="selectRPS('Paper')">✋ Paper</button><button id="rps-s" class="opt-btn" onclick="selectRPS('Scissors')">✌️ Scissors</button></div>
                 <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="rps-bet" value="10"></div><button class="action-btn" onclick="playRPS()">Play Hand</button></div>
                 <div id="rps-fb" class="feedback">Beat the house system engine directly in a standard showdown.</div>
             </div>
 
-            <!-- GAME 18: CASINO WAR -->
             <div id="g-war" class="game-container">
                 <div style="display:flex; gap:30px; margin-bottom:15px;">
                     <div><div style="font-size:12px; text-align:center; color:var(--text-muted)">HOUSE</div><div id="war-house-card" class="card" style="width:70px; height:100px;"></div></div>
@@ -298,7 +264,6 @@
                 <div id="war-fb" class="feedback">High card wins. Ties go to full house combat rules.</div>
             </div>
 
-            <!-- GAME 19: CARIBBEAN STUD -->
             <div id="g-caribbean" class="game-container">
                 <div class="bj-table">
                     <div class="card-area"><h4>Dealer Face Card</h4><div id="cs-d-cards" class="card-display"></div></div>
@@ -311,7 +276,6 @@
                 <div id="cs-fb" class="feedback">5-card poker versus the dealer. Pit your hand combination strength.</div>
             </div>
 
-            <!-- GAME 20: HORSE RACING -->
             <div id="g-racing" class="game-container">
                 <canvas id="racing-canvas" class="game-canvas" width="450" height="180"></canvas>
                 <div class="grid-options" style="margin-top:10px;">
@@ -324,14 +288,12 @@
                 <div id="racing-fb" class="feedback">Pick your horse profile based on dynamic multiplier risk tables.</div>
             </div>
 
-            <!-- GAME 21: DRIFT LUCKY WHEEL -->
             <div id="g-driftwheel" class="game-container">
                 <div id="drift-display" class="wheel-big">🚀 1.0x</div>
                 <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="drift-bet" value="10"></div><button class="action-btn" onclick="spinDrift()">Spin Sector</button></div>
                 <div id="drift-fb" class="feedback">A high volatile variable wheel engine with dynamic returns.</div>
             </div>
 
-            <!-- GAME 22: THIMBLE MULTIPLIER -->
             <div id="g-thimble" class="game-container">
                 <div style="display:flex; gap:20px; margin:20px 0;">
                     <button class="opt-btn" style="font-size:24px; padding:20px;" onclick="selectThimble(0)">📦</button>
@@ -342,7 +304,6 @@
                 <div id="thimble-fb" class="feedback">Two boxes contain flat zeros; one contains a random 2.5x prize multiplier.</div>
             </div>
 
-            <!-- GAME 23: DIAMOND SLOT DUEL -->
             <div id="g-diamond" class="game-container">
                 <div style="font-size:32px; display:flex; gap:30px; margin:15px 0;">
                     <div>🏠 <span id="dia-house">💎</span></div>
@@ -355,9 +316,7 @@
         </div>
     </div>
 
-    <!-- MAIN SYSTEM CONTROLLER SCRIPTS -->
     <script>
-        // Game Registry Definitions
         const GAMES = [
             { id: 'slots', name: '🎰 Slots' }, { id: 'blackjack', name: '🃏 Blackjack' }, { id: 'roulette', name: '🎡 Roulette' },
             { id: 'baccarat', name: '💸 Baccarat' }, { id: 'videopoker', name: '🃏 Video Poker' }, { id: 'craps', name: '🎲 Craps' },
@@ -407,7 +366,6 @@
             const targetGame = GAMES.find(g => g.id === id);
             document.getElementById('active-game-title').innerText = targetGame.name.substring(3);
             
-            // Context resets for high-state games
             if(id === 'plinko') drawPlinkoBoard();
             if(id === 'racing') drawRacingBoard();
         }
@@ -434,7 +392,6 @@
             return deck.sort(() => Math.random() - 0.5);
         }
 
-        // ================= GAME 1: SLOTS ENGINE =================
         const SLOT_POOL = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎'];
         function playSlots() {
             let bet = getWager('slots-bet'); if(!bet) return;
@@ -460,7 +417,6 @@
             }, 80);
         }
 
-        // ================= GAME 2: BLACKJACK ENGINE =================
         let bjDeck, bjPlayer, bjDealer, bjWager;
         function getBJScore(hand) {
             let total = 0, aces = 0;
