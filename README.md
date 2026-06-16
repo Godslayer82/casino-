@@ -1,4 +1,4 @@
-#Casino
+## Casino
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
 [![Build: Single-File](https://img.shields.io/badge/Deployment-Single--File-00ff66.svg)]()
