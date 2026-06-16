@@ -8,6 +8,9 @@ Welcome to the ultimate lightweight, high-performance virtual arcade. Built enti
 
 ---
 
+## Check out the [GitHub Docs](https://docs.github.com) for more information.
+
+
 ## ⚡ Key Architecture Highlights
 * **Zero Dependencies:** Pure HTML5, modular Vanilla JavaScript, and advanced CSS Grid layouts. No frameworks, no node modules.
 * **Persistent Chips Variable:** Built-in hooks with browser `localStorage` to keep your bankroll saved automatically across page refreshes.
