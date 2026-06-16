@@ -52,4 +52,4 @@ Welcome to the ultimate lightweight, high-performance virtual arcade. Built enti
 3. **Wager responsibly** within your sandboxed local storage limits!
 
 ---
-Developed and structured with pure modular efficiency by **CameronCodesStuff**. 🚀
+Developed and structured with pure modular efficiency by **CameronCodesStuff** & **Godslayer82**. 🚀
