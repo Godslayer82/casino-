@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino</title>
+    <style>
+        :root {
+            --bg-color: #0d0e15;
+            --panel-color: #161722;
+            --sidebar-color: #1c1d2a;
+            --accent-color: #e94560;
+            --accent-hover: #ff5e7e;
+            --text-color: #ffffff;
+            --text-muted: #8b8e9f;
+            --neon-green: #00ff66;
+            --neon-blue: #00f0ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Layout Layout */
+        .sidebar { width: 260px; background: var(--sidebar-color); border-right: 1px solid #2d2f44; display: flex; flex-direction: column; height: 100%; }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #2d2f44; background: linear-gradient(135deg, #161722, #251329); }
+        .sidebar-header h1 { color: var(--accent-color); font-size: 20px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(233,69,96,0.4); }
+        
+        .games-menu { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+        .menu-btn { width: 100%; text-align: left; padding: 10px 15px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .menu-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .menu-btn.active { background: var(--accent-color); color: #fff; font-weight: bold; box-shadow: 0 4px 12px rgba(233, 69, 96, 0.2); }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; background: var(--bg-color); }
+        
+        header { background: var(--panel-color); padding: 15px 30px; border-bottom: 1px solid #2d2f44; display: flex; justify-content: space-between; align-items: center; }
+        .game-title-display { font-size: 22px; font-weight: bold; color: var(--neon-blue); }
+        .balance-container { background: rgba(0,255,102,0.1); border: 1px solid var(--neon-green); padding: 8px 16px; border-radius: 20px; font-size: 18px; font-weight: bold; color: var(--neon-green); box-shadow: 0 0 10px rgba(0,255,102,0.1); }
+
+        .stage { flex: 1; padding: 30px; overflow-y: auto; display: flex; justify-content: center; align-items: center; }
+        .game-container { background: var(--panel-color); width: 100%; max-width: 700px; border-radius: 12px; padding: 30px; display: none; flex-direction: column; align-items: center; border: 1px solid #2d2f44; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .game-container.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Shared UI Components */
+        .controls { display: flex; gap: 12px; margin-top: 25px; align-items: center; justify-content: center; flex-wrap: wrap; width: 100%; }
+        .input-group { display: flex; align-items: center; background: #222533; border: 1px solid #3d415c; border-radius: 6px; padding: 2px 8px; }
+        .input-group label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-right: 8px; font-weight: bold; }
+        input[type="number"], input[type="text"] { background: transparent; border: none; color: #fff; padding: 8px; width: 90px; font-size: 16px; font-weight: bold; text-align: center; outline: none; }
+        
+        button.action-btn { padding: 10px 24px; background: var(--neon-green); color: #000; border: none; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+        button.action-btn:hover { background: #1eff7b; transform: translateY(-1px); }
+        button.action-btn:active { transform: translateY(1px); }
+        button:disabled { background: #3d415c !important; color: var(--text-muted) !important; cursor: not-allowed; transform: none !important; }
+        
+        .feedback { margin-top: 20px; font-size: 16px; font-weight: 500; text-align: center; min-height: 24px; line-height: 24px; width: 100%; }
+        .grid-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; width: 100%; margin-top: 15px; }
+        .opt-btn { background: #222533; border: 1px solid #3d415c; color: #fff; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .opt-btn:hover { border-color: var(--neon-blue); background: rgba(0,240,255,0.05); }
+        .opt-btn.selected { background: var(--neon-blue); color: #000; border-color: var(--neon-blue); }
+
+        /* --- GAME SPECIFIC GRAPHICS --- */
+        /* Slots */
+        .slots-row { display: flex; gap: 15px; margin: 15px 0; }
+        .slot-reel { width: 90px; height: 110px; background: #fff; color: #000; font-size: 55px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 4px solid #ffd700; box-shadow: inset 0 0 15px rgba(0,0,0,0.4); }
+        /* Blackjack */
+        .bj-table { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+        .card-area { background: #0b3d26; padding: 15px; border-radius: 8px; min-height: 110px; border: 1px solid #145c3b; }
+        .card-area h4 { font-size: 13px; color: #8fae9e; text-transform: uppercase; margin-bottom: 5px; }
+        .card-display { display: flex; gap: 8px; flex-wrap: wrap; }
+        .card { width: 55px; height: 80px; background: #fff; color: #000; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; padding: 6px; font-weight: bold; font-size: 16px; box-shadow: 2px 4px 8px rgba(0,0,0,0.3); }
+        .card.red { color: #e94560; }
+        /* Roulette / Wheel base */
+        .wheel-big { font-size: 48px; margin: 20px 0; font-weight: bold; height: 70px; }
+        /* Video Poker */
+        .poker-hold-label { font-size: 11px; text-transform: uppercase; text-align: center; color: var(--accent-color); font-weight: bold; visibility: hidden; margin-top: 4px; }
+        .poker-card-container { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .poker-card-container.holding .poker-hold-label { visibility: visible; }
+        /* Craps / Dice display */
+        .dice-box { display: flex; gap: 20px; margin: 15px 0; }
+        .die { width: 60px; height: 60px; background: #fff; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: #000; font-size: 32px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        /* Plinko / Pachinko elements */
+        canvas.game-canvas { background: #11121a; border-radius: 6px; border: 1px solid #2d2f44; max-width: 100%; }
+        /* Shell Game */
+        .shell-container { display: flex; gap: 40px; margin: 20px 0; }
+        .shell { font-size: 50px; cursor: pointer; transition: 0.2s; }
+        .shell:hover { transform: translateY(-10px); }
+        /* Keno / Lottery Board */
+        .keno-board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; width: 100%; max-width: 450px; }
+        .keno-cell { aspect-ratio: 1; background: #222533; border: 1px solid #3d415c; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 4px; cursor: pointer; color: #fff; }
+        .keno-cell.selected { background: var(--neon-blue); color: #000; border-color: var(--neon-blue); }
+        .keno-cell.hit { background: var(--neon-green) !important; color: #000; }
+        .keno-cell.miss { background: var(--accent-color); color: #fff; }
+        /* Mines Grid */
+        .mines-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 280px; height: 280px; }
+        .mine-tile { background: #222533; border-radius: 6px; border: 1px solid #3d415c; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; transition: 0.15s; }
+        .mine-tile:hover { background: #2c2f42; }
+        .mine-tile.revealed-safe { background: rgba(0,255,102,0.2); border-color: var(--neon-green); }
+        .mine-tile.revealed-mine { background: rgba(233,69,96,0.3); border-color: var(--accent-color); }
+        /* Wheel of Fortune Colors */
+        .wof-sector { padding: 10px; border-radius: 4px; font-weight: bold; text-align: center; color: #000; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>🎰 Casino</h1>
+        </div>
+        <div class="games-menu" id="side-menu">
+            <!-- Programmatically filled for cleaner files -->
+        </div>
+    </div>
+
+    <!-- MAIN GAME WORKSPACE -->
+    <div class="main-content">
+        <header>
+            <div class="game-title-display" id="active-game-title">Slots</div>
+            <div class="balance-container">Balance: $<span id="balance">1000</span></div>
+        </header>
+
+        <div class="stage">
+            
+            <!-- GAME 1: SLOTS -->
+            <div id="g-slots" class="game-container active">
+                <div class="slots-row">
+                    <div id="reel1" class="slot-reel">🍒</div>
+                    <div id="reel2" class="slot-reel">🍒</div>
+                    <div id="reel3" class="slot-reel">🍒</div>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="slots-bet" value="10"></div><button class="action-btn" onclick="playSlots()">Spin</button></div>
+                <div id="slots-fb" class="feedback">Try your luck! Three matching symbols triggers the jackpot.</div>
+            </div>
+
+            <!-- GAME 2: BLACKJACK -->
+            <div id="g-blackjack" class="game-container">
+                <div class="bj-table">
+                    <div class="card-area"><h4>Dealer Hand <span id="bj-d-score"></span></h4><div id="bj-d-cards" class="card-display"></div></div>
+                    <div class="card-area"><h4>Player Hand <span id="bj-p-score"></span></h4><div id="bj-p-cards" class="card-display"></div></div>
+                </div>
+                <div class="controls">
+                    <div id="bj-ctrl-start" class="input-group"><label>Bet</label><input type="number" id="bj-bet" value="10"><button class="action-btn" style="margin-left:10px" onclick="startBlackjack()">Deal</button></div>
+                    <div id="bj-ctrl-play" style="display:none; gap:10px;"><button class="action-btn" style="background:#ffc107" onclick="bjHit()">Hit</button><button class="action-btn" style="background:var(--neon-blue)" onclick="bjStand()">Stand</button></div>
+                </div>
+                <div id="bj-fb" class="feedback">Get closest to 21 without going over!</div>
+            </div>
+
+            <!-- GAME 3: ROULETTE -->
+            <div id="g-roulette" class="game-container">
+                <div id="roulette-wheel" class="wheel-big">❓</div>
+                <div class="grid-options">
+                    <button class="opt-btn" onclick="playRoulette('red')" style="border-bottom: 3px solid #e94560">Red (2x)</button>
+                    <button class="opt-btn" onclick="playRoulette('black')" style="border-bottom: 3px solid #212529">Black (2x)</button>
+                    <button class="opt-btn" onclick="playRoulette('green')" style="border-bottom: 3px solid #00ff66">Green 0 (35x)</button>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="roulette-bet" value="10"></div></div>
+                <div id="roulette-fb" class="feedback">Select a color profile to wager your chips.</div>
+            </div>
+
+            <!-- GAME 4: BACCARAT -->
+            <div id="g-baccarat" class="game-container">
+                <div class="grid-options">
+                    <button id="bac-p" class="opt-btn" onclick="selectBaccaratSide('Player')">Player (2x)</button>
+                    <button id="bac-b" class="opt-btn" onclick="selectBaccaratSide('Banker')">Banker (1.95x)</button>
+                    <button id="bac-t" class="opt-btn" onclick="selectBaccaratSide('Tie')">Tie (9x)</button>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="baccarat-bet" value="10"></div><button class="action-btn" onclick="playBaccarat()">Deal Hands</button></div>
+                <div id="baccarat-fb" class="feedback">Bet on which hand finishes closest to 9.</div>
+            </div>
+
+            <!-- GAME 5: VIDEO POKER -->
+            <div id="g-videopoker" class="game-container">
+                <div class="card-display" style="gap:15px; margin-bottom:10px;">
+                    <div class="poker-card-container" onclick="togglePokerHold(0)"><div id="vp-c0" class="card"></div><div class="poker-hold-label">HOLD</div></div>
+                    <div class="poker-card-container" onclick="togglePokerHold(1)"><div id="vp-c1" class="card"></div><div class="poker-hold-label">HOLD</div></div>
+                    <div class="poker-card-container" onclick="togglePokerHold(2)"><div id="vp-c2" class="card"></div><div class="poker-hold-label">HOLD</div></div>
+                    <div class="poker-card-container" onclick="togglePokerHold(3)"><div id="vp-c3" class="card"></div><div class="poker-hold-label">HOLD</div></div>
+                    <div class="poker-card-container" onclick="togglePokerHold(4)"><div id="vp-c4" class="card"></div><div class="poker-hold-label">HOLD</div></div>
+                </div>
+                <div class="controls">
+                    <div id="vp-ctrl-bet" class="input-group"><label>Bet</label><input type="number" id="vp-bet" value="10"></div>
+                    <button id="vp-btn" class="action-btn" onclick="playVideoPoker()">Deal Cards</button>
+                </div>
+                <div id="vp-fb" class="feedback">Standard 5-Card Draw. Click on individual cards to hold them before drawing!</div>
+            </div>
+
+            <!-- GAME 6: CRAPS -->
+            <div id="g-craps" class="game-container">
+                <div class="dice-box"><div id="die1" class="die">⚀</div><div id="die2" class="die">⚀</div></div>
+                <div class="grid-options">
+                    <button id="craps-pass" class="opt-btn" onclick="setCrapsLine(true)">Pass Line</button>
+                    <button id="craps-dont" class="opt-btn" onclick="setCrapsLine(false)">Don't Pass</button>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="craps-bet" value="10"></div><button class="action-btn" onclick="rollCraps()">Roll Dice</button></div>
+                <div id="craps-fb" class="feedback">Choose your pass state line to cast the dice.</div>
+            </div>
+
+            <!-- GAME 7: KENO -->
+            <div id="g-keno" class="game-container">
+                <div class="keno-board" id="keno-grid"></div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="keno-bet" value="10"></div><button class="action-btn" onclick="drawKeno()">Draw 20 Numbers</button></div>
+                <div id="keno-fb" class="feedback">Pick up to 10 numbers from the board to match the lottery draws.</div>
+            </div>
+
+            <!-- GAME 8: CRASH -->
+            <div id="g-crash" class="game-container">
+                <div id="crash-multiplier" style="font-size:55px; font-weight:bold; color:var(--neon-green); margin:20px 0;">1.00x</div>
+                <div class="controls">
+                    <div class="input-group"><label>Bet</label><input type="number" id="crash-bet" value="10"></div>
+                    <button id="crash-btn" class="action-btn" onclick="startCrash()">Invest / Launch</button>
+                </div>
+                <div id="crash-fb" class="feedback">Cash out before the rocket crashes to keep your compound multiplier!</div>
+            </div>
+
+            <!-- GAME 9: WHEEL OF FORTUNE -->
+            <div id="g-wof" class="game-container">
+                <div id="wof-wheel" class="wheel-big">✨</div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="wof-bet" value="10"></div><button class="action-btn" onclick="spinWOF()">Spin Wheel</button></div>
+                <div id="wof-fb" class="feedback">Spin to land on dynamic multi-payout sectors or flat bankrupt slots.</div>
+            </div>
+
+            <!-- GAME 10: MINES -->
+            <div id="g-mines" class="game-container">
+                <div class="mines-grid" id="mines-board"></div>
+                <div class="controls">
+                    <div id="mines-setup" class="input-group"><label>Bet</label><input type="number" id="mines-bet" value="10" style="width:60px;"><label style="margin-left:5px">Mines</label><input type="number" id="mines-count" value="3" min="1" max="24" style="width:40px;"><button class="action-btn" style="margin-left:10px;" onclick="startMines()">Lock In</button></div>
+                    <button id="mines-cashout" class="action-btn" style="background:var(--neon-blue); display:none;" onclick="cashoutMines()">Take Win</button>
+                </div>
+                <div id="mines-fb" class="feedback">Uncover hidden dynamic safe tiles. Hit a mine and you drop the bag.</div>
+            </div>
+
+            <!-- GAME 11: HI-LO -->
+            <div id="g-hilo" class="game-container">
+                <div id="hilo-card" class="card" style="width:80px; height:120px; font-size:24px; margin-bottom:15px;"></div>
+                <div class="controls" id="hilo-ctrls-start"><div class="input-group"><label>Bet</label><input type="number" id="hilo-bet" value="10"></div><button class="action-btn" onclick="startHilo()">Buy In</button></div>
+                <div class="controls" id="hilo-ctrls-game" style="display:none;"><button class="action-btn" style="background:#ffc107" onclick="playHilo('higher')">Higher ↑</button><button class="action-btn" style="background:var(--neon-blue)" onclick="playHilo('lower')">Lower ↓</button><button class="action-btn" style="background:var(--neon-green)" onclick="cashoutHilo()">Cash Out</button></div>
+                <div id="hilo-fb" class="feedback">Predict if the hidden card value is higher or lower than the target card.</div>
+            </div>
+
+            <!-- GAME 12: PLINKO -->
+            <div id="g-plinko" class="game-container">
+                <canvas id="plinko-canvas" class="game-canvas" width="400" height="300"></canvas>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="plinko-bet" value="10"></div><button class="action-btn" onclick="dropPlinko()">Drop Ball</button></div>
+                <div id="plinko-fb" class="feedback">Drop chips past landing pins into reward bottom bins.</div>
+            </div>
+
+            <!-- GAME 13: SHELL GAME -->
+            <div id="g-shell" class="game-container">
+                <div class="shell-container">
+                    <div class="shell" onclick="liftShell(0)">🥛</div>
+                    <div class="shell" onclick="liftShell(1)">🥛</div>
+                    <div class="shell" onclick="liftShell(2)">🥛</div>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="shell-bet" value="10"></div></div>
+                <div id="shell-fb" class="feedback">Track the diamond hidden under one of the three flipped cups.</div>
+            </div>
+
+            <!-- GAME 14: DICE CHANCE -->
+            <div id="g-dicechance" class="game-container">
+                <div style="font-size:20px; margin-bottom:15px;">Target Roll Over: <span id="dc-target-val" style="color:var(--neon-blue); font-weight:bold;">50</span></div>
+                <input type="range" id="dc-range" min="5" max="95" value="50" style="width:80%; margin-bottom:20px;" oninput="updateDiceChancePayout()">
+                <div style="font-size:14px; color:var(--text-muted); margin-bottom:15px;">Calculated Win Payout Multiplier: <span id="dc-payout-display" style="color:var(--neon-green)">1.98x</span></div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="dc-bet" value="10"></div><button class="action-btn" onclick="rollDiceChance()">Roll</button></div>
+                <div id="dc-fb" class="feedback">Slide the probability target to adjust your own custom risk profile.</div>
+            </div>
+
+            <!-- GAME 15: COIN FLIP -->
+            <div id="g-coinflip" class="game-container">
+                <div id="coin-graphic" style="width:100px; height:100px; background:#ffd700; color:#000; font-weight:bold; font-size:20px; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-bottom:20px; border:4px dashed #b89700;">HEADS</div>
+                <div class="grid-options" style="max-width:300px;"><button id="coin-h" class="opt-btn" onclick="selectCoinSide('Heads')">Heads</button><button id="coin-t" class="opt-btn" onclick="selectCoinSide('Tails')">Tails</button></div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="coin-bet" value="10"></div><button class="action-btn" onclick="flipCoin()">Flip</button></div>
+                <div id="coin-fb" class="feedback">Call 50/50 heads or tails selections.</div>
+            </div>
+
+            <!-- GAME 16: RED OR BLACK CARDS -->
+            <div id="g-redblack" class="game-container">
+                <div id="rb-card-display" class="card" style="width:80px; height:120px; font-size:24px; margin-bottom:15px; visibility:hidden;"></div>
+                <div class="grid-options" style="max-width:300px;"><button id="rb-r" class="opt-btn" style="color:#e94560" onclick="selectRBSide('Red')">Red Card</button><button id="rb-b" class="opt-btn" onclick="selectRBSide('Black')">Black Card</button></div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="rb-bet" value="10"></div><button class="action-btn" onclick="drawRedBlack()">Draw</button></div>
+                <div id="rb-fb" class="feedback">Guess the uniform color classification of the next random deck card drawn.</div>
+            </div>
+
+            <!-- GAME 17: ROCK PAPER SCISSORS -->
+            <div id="g-rps" class="game-container">
+                <div class="grid-options" style="max-width:320px;"><button id="rps-r" class="opt-btn" onclick="selectRPS('Rock')">✊ Rock</button><button id="rps-p" class="opt-btn" onclick="selectRPS('Paper')">✋ Paper</button><button id="rps-s" class="opt-btn" onclick="selectRPS('Scissors')">✌️ Scissors</button></div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="rps-bet" value="10"></div><button class="action-btn" onclick="playRPS()">Play Hand</button></div>
+                <div id="rps-fb" class="feedback">Beat the house system engine directly in a standard showdown.</div>
+            </div>
+
+            <!-- GAME 18: CASINO WAR -->
+            <div id="g-war" class="game-container">
+                <div style="display:flex; gap:30px; margin-bottom:15px;">
+                    <div><div style="font-size:12px; text-align:center; color:var(--text-muted)">HOUSE</div><div id="war-house-card" class="card" style="width:70px; height:100px;"></div></div>
+                    <div><div style="font-size:12px; text-align:center; color:var(--text-muted)">YOU</div><div id="war-player-card" class="card" style="width:70px; height:100px;"></div></div>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="war-bet" value="10"></div><button class="action-btn" onclick="playWar()">Draw Card</button></div>
+                <div id="war-fb" class="feedback">High card wins. Ties go to full house combat rules.</div>
+            </div>
+
+            <!-- GAME 19: CARIBBEAN STUD -->
+            <div id="g-caribbean" class="game-container">
+                <div class="bj-table">
+                    <div class="card-area"><h4>Dealer Face Card</h4><div id="cs-d-cards" class="card-display"></div></div>
+                    <div class="card-area"><h4>Your Poker Hand</h4><div id="cs-p-cards" class="card-display"></div></div>
+                </div>
+                <div class="controls">
+                    <div id="cs-ctrl-start" class="input-group"><label>Ante Bet</label><input type="number" id="cs-bet" value="10"><button class="action-btn" style="margin-left:10px" onclick="startCaribbean()">Deal</button></div>
+                    <div id="cs-ctrl-play" style="display:none; gap:10px;"><button class="action-btn" style="background:var(--neon-green)" onclick="playCaribbeanCall(true)">Call (Double Bet)</button><button class="action-btn" style="background:var(--accent-color)" onclick="playCaribbeanCall(false)">Fold</button></div>
+                </div>
+                <div id="cs-fb" class="feedback">5-card poker versus the dealer. Pit your hand combination strength.</div>
+            </div>
+
+            <!-- GAME 20: HORSE RACING -->
+            <div id="g-racing" class="game-container">
+                <canvas id="racing-canvas" class="game-canvas" width="450" height="180"></canvas>
+                <div class="grid-options" style="margin-top:10px;">
+                    <button id="horse-0" class="opt-btn" onclick="selectHorse(0)">⚡ Cyber Streak (2x)</button>
+                    <button id="horse-1" class="opt-btn" onclick="selectHorse(1)">🔥 Crimson Fury (3x)</button>
+                    <button id="horse-2" class="opt-btn" onclick="selectHorse(2)">💎 Neon Dream (5x)</button>
+                    <button id="horse-3" class="opt-btn" onclick="selectHorse(3)">🟢 Mint Matrix (10x)</button>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="racing-bet" value="10"></div><button id="racing-btn" class="action-btn" onclick="startRace()">Start Derby</button></div>
+                <div id="racing-fb" class="feedback">Pick your horse profile based on dynamic multiplier risk tables.</div>
+            </div>
+
+            <!-- GAME 21: DRIFT LUCKY WHEEL -->
+            <div id="g-driftwheel" class="game-container">
+                <div id="drift-display" class="wheel-big">🚀 1.0x</div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="drift-bet" value="10"></div><button class="action-btn" onclick="spinDrift()">Spin Sector</button></div>
+                <div id="drift-fb" class="feedback">A high volatile variable wheel engine with dynamic returns.</div>
+            </div>
+
+            <!-- GAME 22: THIMBLE MULTIPLIER -->
+            <div id="g-thimble" class="game-container">
+                <div style="display:flex; gap:20px; margin:20px 0;">
+                    <button class="opt-btn" style="font-size:24px; padding:20px;" onclick="selectThimble(0)">📦</button>
+                    <button class="opt-btn" style="font-size:24px; padding:20px;" onclick="selectThimble(1)">📦</button>
+                    <button class="opt-btn" style="font-size:24px; padding:20px;" onclick="selectThimble(2)">📦</button>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="thimble-bet" value="10"></div></div>
+                <div id="thimble-fb" class="feedback">Two boxes contain flat zeros; one contains a random 2.5x prize multiplier.</div>
+            </div>
+
+            <!-- GAME 23: DIAMOND SLOT DUEL -->
+            <div id="g-diamond" class="game-container">
+                <div style="font-size:32px; display:flex; gap:30px; margin:15px 0;">
+                    <div>🏠 <span id="dia-house">💎</span></div>
+                    <div>👤 <span id="dia-player">💎</span></div>
+                </div>
+                <div class="controls"><div class="input-group"><label>Bet</label><input type="number" id="dia-bet" value="10"></div><button class="action-btn" onclick="playDiamondDuel()">Engage</button></div>
+                <div id="dia-fb" class="feedback">Roll direct diamond qualities versus the house. Rarity tables dictate win limits.</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MAIN SYSTEM CONTROLLER SCRIPTS -->
+    <script>
+        // Game Registry Definitions
+        const GAMES = [
+            { id: 'slots', name: '🎰 Slots' }, { id: 'blackjack', name: '🃏 Blackjack' }, { id: 'roulette', name: '🎡 Roulette' },
+            { id: 'baccarat', name: '💸 Baccarat' }, { id: 'videopoker', name: '🃏 Video Poker' }, { id: 'craps', name: '🎲 Craps' },
+            { id: 'keno', name: '🎱 Keno' }, { id: 'crash', name: '📈 Crash' }, { id: 'wof', name: '🎡 Wheel of Fortune' },
+            { id: 'mines', name: '💣 Mines' }, { id: 'hilo', name: '🃏 Hi-Lo' }, { id: 'plinko', name: '🔺 Plinko' },
+            { id: 'shell', name: ' Cup Shell' }, { id: 'dicechance', name: '🎚️ Dice Chance' }, { id: 'coinflip', name: '🪙 Coin Flip' },
+            { id: 'redblack', name: '🔴 Red or Black' }, { id: 'rps', name: '✊ Rock Paper Scissors' }, { id: 'war', name: '⚔️ Casino War' },
+            { id: 'caribbean', name: '🌴 Caribbean Stud' }, { id: 'racing', name: '🏇 Horse Racing' }, { id: 'driftwheel', name: '🚀 Drift Wheel' },
+            { id: 'thimble', name: '📦 Thimble Box' }, { id: 'diamond', name: '💎 Diamond Duel' }
+        ];
+
+        let balance = parseInt(localStorage.getItem('mega_casino_balance')) || 1000;
+        let activeGameId = 'slots';
+        updateBalanceDisplay();
+        buildSidebarMenu();
+
+        function updateBalanceDisplay() {
+            document.getElementById('balance').innerText = balance;
+            localStorage.setItem('mega_casino_balance', balance);
+            if (balance <= 0) {
+                setTimeout(() => {
+                    if (confirm("House ATM provides a $500 pity cash injection. Accept?")) { balance = 500; updateBalanceDisplay(); }
+                }, 1000);
+            }
+        }
+
+        function buildSidebarMenu() {
+            const menu = document.getElementById('side-menu');
+            GAMES.forEach(g => {
+                let btn = document.createElement('button');
+                btn.className = `menu-btn ${g.id === activeGameId ? 'active' : ''}`;
+                btn.id = `menu-link-${g.id}`;
+                btn.innerHTML = g.name;
+                btn.onclick = () => switchGame(g.id);
+                menu.appendChild(btn);
+            });
+        }
+
+        function switchGame(id) {
+            document.querySelectorAll('.game-container').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`g-${id}`).classList.add('active');
+            document.getElementById(`menu-link-${id}`).classList.add('active');
+            
+            activeGameId = id;
+            const targetGame = GAMES.find(g => g.id === id);
+            document.getElementById('active-game-title').innerText = targetGame.name.substring(3);
+            
+            // Context resets for high-state games
+            if(id === 'plinko') drawPlinkoBoard();
+            if(id === 'racing') drawRacingBoard();
+        }
+
+        function getWager(id) {
+            let field = document.getElementById(id);
+            let val = parseInt(field.value);
+            if (isNaN(val) || val <= 0) { alert("Enter a valid custom wager amount."); return false; }
+            if (val > balance) { alert("Insufficient chip balance."); return false; }
+            return val;
+        }
+
+        function generateCardDisplayMarkup(card) {
+            return `<div class="card ${card.isRed ? 'red' : ''}"><div>${card.val}</div><div style="align-self:flex-end">${card.suit}</div></div>`;
+        }
+
+        const CARD_SUITS = ['♠', '♥', '♦', '♣'];
+        const CARD_VALUES = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        function pullFreshDeck() {
+            let deck = [];
+            for(let suit of CARD_SUITS) {
+                for(let val of CARD_VALUES) { deck.push({val, suit, isRed: (suit==='♥'||suit==='♦'), rank: CARD_VALUES.indexOf(val)+2}); }
+            }
+            return deck.sort(() => Math.random() - 0.5);
+        }
+
+        // ================= GAME 1: SLOTS ENGINE =================
+        const SLOT_POOL = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎'];
+        function playSlots() {
+            let bet = getWager('slots-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let count = 0;
+            let loop = setInterval(() => {
+                document.getElementById('reel1').innerText = SLOT_POOL[Math.floor(Math.random()*6)];
+                document.getElementById('reel2').innerText = SLOT_POOL[Math.floor(Math.random()*6)];
+                document.getElementById('reel3').innerText = SLOT_POOL[Math.floor(Math.random()*6)];
+                if(++count > 8) {
+                    clearInterval(loop);
+                    let r1 = SLOT_POOL[Math.floor(Math.random()*6)], r2 = SLOT_POOL[Math.floor(Math.random()*6)], r3 = SLOT_POOL[Math.floor(Math.random()*6)];
+                    document.getElementById('reel1').innerText = r1; document.getElementById('reel2').innerText = r2; document.getElementById('reel3').innerText = r3;
+                    let fb = document.getElementById('slots-fb');
+                    if(r1 === r2 && r2 === r3) {
+                        let win = r1 === '💎' ? bet*15 : bet*6; balance += win;
+                        fb.innerHTML = `<span style="color:var(--neon-green)">JACKPOT Match! Payout $${win}</span>`;
+                    } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                        balance += Math.floor(bet*1.5); fb.innerHTML = `<span style="color:var(--neon-blue)">Double Match! Returned $${Math.floor(bet*1.5)}</span>`;
+                    } else { fb.innerHTML = `<span style="color:var(--accent-color)">No combination hits. Lost $${bet}</span>`; }
+                    updateBalanceDisplay();
+                }
+            }, 80);
+        }
+
+        // ================= GAME 2: BLACKJACK ENGINE =================
+        let bjDeck, bjPlayer, bjDealer, bjWager;
+        function getBJScore(hand) {
+            let total = 0, aces = 0;
+            for(let c of hand) { if(['J','Q','K'].includes(c.val)) total += 10; else if(c.val==='A') { total += 11; aces++; } else total += parseInt(c.val); }
+            while(total > 21 && aces > 0) { total -= 10; aces--; } return total;
+        }
+        function startBlackjack() {
+            bjWager = getWager('bj-bet'); if(!bjWager) return;
+            balance -= bjWager; updateBalanceDisplay();
+            bjDeck = pullFreshDeck();
+            bjPlayer = [bjDeck.pop(), bjDeck.pop()]; bjDealer = [bjDeck.pop(), bjDeck.pop()];
+            document.getElementById('bj-ctrl-start').style.display = 'none';
+            document.getElementById('bj-ctrl-play').style.display = 'flex';
+            renderBJ();
+        }
+        function renderBJ() {
+            let pStr = '', dStr = '';
+            bjPlayer.forEach(c => pStr += generateCardDisplayMarkup(c));
+            bjDealer.forEach((c, i) => dStr += (i===0 && document.getElementById('bj-ctrl-play').style.display === 'flex') ? `<div class="card" style="background:#444; color:#fff"><div>?</div></div>` : generateCardDisplayMarkup(c));
+            document.getElementById('bj-p-cards').innerHTML = pStr; document.getElementById('bj-d-cards').innerHTML = dStr;
+            document.getElementById('bj-p-score').innerText = `(${getBJScore(bjPlayer)})`;
+            document.getElementById('bj-d-score').innerText = document.getElementById('bj-ctrl-play').style.display === 'flex' ? '(?)' : `(${getBJScore(bjDealer)})`;
+            if (getBJScore(bjPlayer) > 21) resolutionBJ('lose', 'Bust! Hand value limit breached.');
+        }
+        function bjHit() { bjPlayer.push(bjDeck.pop()); renderBJ(); }
+        function bjStand() {
+            document.getElementById('bj-ctrl-play').style.display = 'none';
+            while(getBJScore(bjDealer) < 17) { bjDealer.push(bjDeck.pop()); }
+            renderBJ();
+            let ps = getBJScore(bjPlayer), ds = getBJScore(bjDealer);
+            if(ds > 21 || ps > ds) resolutionBJ('win', 'Victory achieved over the house dealer.');
+            else if(ps < ds) resolutionBJ('lose', 'Dealer scores higher context values.');
+            else resolutionBJ('push', 'Push. Stand-off conditions matched.');
+        }
+        function resolutionBJ(status, msg) {
+            let fb = document.getElementById('bj-fb');
+            if(status === 'win') { balance += bjWager*2; fb.innerHTML = `<span style="color:var(--neon-green)">${msg} +$${bjWager}</span>`; }
+            else if (status === 'push') { balance += bjWager; fb.innerHTML = `<span style="color:var(--neon-blue)">${msg}</span>`; }
+            else { fb.innerHTML = `<span style="color:var(--accent-color)">${msg} -$${bjWager}</span>`; }
+            document.getElementById('bj-ctrl-start').style.style = 'block';
+            document.getElementById('bj-ctrl-play').style.display = 'none';
+            document.getElementById('bj-ctrl-start').style.display = 'flex';
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 3: ROULETTE ENGINE =================
+        const ROULETTE_NUMS = [
+            {n:0, c:'green'}, {n:32, c:'red'}, {n:15, c:'black'}, {n:19, c:'red'}, {n:4, c:'black'},
+            {n:21, c:'red'}, {n:2, c:'black'}, {n:25, c:'red'}, {n:17, c:'black'}, {n:34, c:'red'}
+        ];
+        function playRoulette(choice) {
+            let bet = getWager('roulette-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let c = 0, el = document.getElementById('roulette-wheel');
+            let spin = setInterval(() => {
+                let pick = ROULETTE_NUMS[Math.floor(Math.random()*ROULETTE_NUMS.length)];
+                el.innerText = pick.n; el.style.color = pick.c === 'red' ? '#e94560' : pick.c==='green' ? '#00ff66' : '#fff';
+                if(++c > 12) {
+                    clearInterval(spin);
+                    let res = ROULETTE_NUMS[Math.floor(Math.random()*ROULETTE_NUMS.length)];
+                    el.innerText = res.n; el.style.color = res.c==='red'?'#e94560':res.c==='green'?'#00ff66':'#fff';
+                    let fb = document.getElementById('roulette-fb');
+                    if(choice === res.c) {
+                        let mult = choice==='green'?35:2; balance += bet*mult;
+                        fb.innerHTML = `<span style="color:var(--neon-green)">Hit! Sector matches ${res.c.toUpperCase()} (${res.n}). Won $${bet*mult}</span>`;
+                    } else { fb.innerHTML = `<span style="color:var(--accent-color)">Miss! Result fell on ${res.c.toUpperCase()} (${res.n}). Lost $${bet}</span>`; }
+                    updateBalanceDisplay();
+                }
+            }, 90);
+        }
+
+        // ================= GAME 4: BACCARAT ENGINE =================
+        let baccaratSide = 'Player';
+        function selectBaccaratSide(side) {
+            baccaratSide = side;
+            ['bac-p','bac-b','bac-t'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+            document.getElementById(`bac-${side.toLowerCase()[0]}`).classList.add('selected');
+        }
+        function playBaccarat() {
+            let bet = getWager('baccarat-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let p1 = Math.floor(Math.random()*10), p2 = Math.floor(Math.random()*10);
+            let b1 = Math.floor(Math.random()*10), b2 = Math.floor(Math.random()*10);
+            let pScore = (p1 + p2) % 10, bScore = (b1 + b2) % 10;
+            let outcome = 'Tie'; if(pScore > bScore) outcome = 'Player'; else if(bScore > pScore) outcome = 'Banker';
+            let fb = document.getElementById('baccarat-fb');
+            let report = `[Player Hand: ${pScore}] vs [Banker Hand: ${bScore}] -> Winning Side: ${outcome}. `;
+            if(baccaratSide === outcome) {
+                let payout = baccaratSide==='Tie'? bet*9 : (baccaratSide==='Banker'? Math.floor(bet*1.95) : bet*2);
+                balance += payout; fb.innerHTML = `<span style="color:var(--neon-green)">${report} Won $${payout}!</span>`;
+            } else { fb.innerHTML = `<span style="color:var(--accent-color)">${report} Lost $${bet}.</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 5: VIDEO POKER ENGINE =================
+        let vpHand = [], vpHolds = [false, false, false, false, false], vpStage = 0;
+        function togglePokerHold(idx) {
+            if(vpStage !== 1) return;
+            vpHolds[idx] = !vpHolds[idx];
+            document.querySelectorAll('.poker-card-container')[idx].classList.toggle('holding', vpHolds[idx]);
+        }
+        function playVideoPoker() {
+            let fb = document.getElementById('vp-fb');
+            if(vpStage === 0) {
+                let bet = getWager('vp-bet'); if(!bet) return;
+                balance -= bet; updateBalanceDisplay();
+                let deck = pullFreshDeck(); vpHand = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
+                vpHolds = [false, false, false, false, false];
+                document.querySelectorAll('.poker-card-container').forEach(el=>el.classList.remove('holding'));
+                for(let i=0; i<5; i++) document.getElementById(`vp-c${i}`).innerHTML = generateCardDisplayMarkup(vpHand[i]);
+                vpStage = 1; document.getElementById('vp-btn').innerText = "Draw Cards";
+                fb.innerText = "Select target hold states on individual cards and press Draw.";
+            } else {
+                let deck = pullFreshDeck();
+                for(let i=0; i<5; i++) {
+                    if(!vpHolds[i]) { vpHand[i] = deck.pop(); document.getElementById(`vp-c${i}`).innerHTML = generateCardDisplayMarkup(vpHand[i]); }
+                }
+                // Evaluator Logic
+                let ranks = vpHand.map(c=>c.rank).sort((a,b)=>a-b);
+                let suits = vpHand.map(c=>c.suit);
+                let isFlush = suits.every(s => s === suits[0]);
+                let isStraight = ranks.every((r,i) => i===0 || r === ranks[i-1]+1);
+                let counts = {}; ranks.forEach(r => counts[r] = (counts[r]||0)+1);
+                let cVals = Object.values(counts).sort((a,b)=>b-a);
+                let bet = parseInt(document.getElementById('vp-bet').value);
+                let win = 0, label = "High Card / No Combination Hand";
+
+                if(isFlush && isStraight) { win = bet*50; label = "Straight Flush"; }
+                else if(cVals[0] === 4) { win = bet*25; label = "Four of a Kind"; }
+                else if(cVals[0] === 3 && cVals[1] === 2) { win = bet*15; label = "Full House"; }
+                else if(isFlush) { win = bet*10; label = "Flush Combo"; }
+                else if(isStraight) { win = bet*6; label = "Straight Run"; }
+                else if(cVals[0] === 3) { win = bet*3; label = "Three of a Kind"; }
+                else if(cVals[0] === 2 && cVals[1] === 2) { win = bet*2; label = "Two Pair Display"; }
+                else if(cVals[0] === 2) { win = Math.floor(bet*1.2); label = "One Pair Setup"; }
+
+                if(win > 0) { balance += win; fb.innerHTML = `<span style="color:var(--neon-green)">${label}! Payout: $${win}</span>`; }
+                else { fb.innerHTML = `<span style="color:var(--accent-color)">${label}. Lost investment.</span>`; }
+                vpStage = 0; document.getElementById('vp-btn').innerText = "Deal Cards";
+                updateBalanceDisplay();
+            }
+        }
+
+        // ================= GAME 6: CRAPS ENGINE =================
+        let crapsPassLine = true, crapsPoint = 0;
+        function setCrapsLine(isPass) {
+            crapsPassLine = isPass; crapsPoint = 0;
+            document.getElementById('craps-pass').classList.toggle('selected', isPass);
+            document.getElementById('craps-dont').classList.toggle('selected', !isPass);
+        }
+        function rollCraps() {
+            let bet = getWager('craps-bet'); if(!bet) return;
+            let d1 = Math.floor(Math.random()*6)+1, d2 = Math.floor(Math.random()*6)+1;
+            let total = d1 + d2;
+            const diceMap = ['','⚀','⚁','⚂','⚃','⚄','⚅'];
+            document.getElementById('die1').innerText = diceMap[d1]; document.getElementById('die2').innerText = diceMap[d2];
+            let fb = document.getElementById('craps-fb');
+            
+            if(crapsPoint === 0) { // Come Out Roll
+                if([7, 11].includes(total)) {
+                    if(crapsPassLine) { balance += bet; fb.innerHTML = `<span style="color:var(--neon-green)">Natural ${total}! Pass Line Wins $${bet}</span>`; }
+                    else { balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">Natural ${total}! Don't Pass Loses $${bet}</span>`; }
+                } else if([2, 3, 12].includes(total)) {
+                    if(crapsPassLine) { balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">Craps ${total}! Pass Line Loses $${bet}</span>`; }
+                    else { balance += bet; fb.innerHTML = `<span style="color:var(--neon-green)">Craps ${total}! Don't Pass Wins $${bet}</span>`; }
+                } else {
+                    crapsPoint = total; fb.innerHTML = `<span style="color:var(--neon-blue)">Point is set to ${total}. Roll again to hit point!</span>`;
+                }
+            } else { // Point Rolls
+                if(total === crapsPoint) {
+                    if(crapsPassLine) { balance += bet; fb.innerHTML = `<span style="color:var(--neon-green)">Hit Point ${total}! Pass Line Wins $${bet}</span>`; }
+                    else { balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">Hit Point ${total}! Don't Pass Loses $${bet}</span>`; }
+                    crapsPoint = 0;
+                } else if(total === 7) {
+                    if(crapsPassLine) { balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">Seven Out! Pass Line Loses $${bet}</span>`; }
+                    else { balance += bet; fb.innerHTML = `<span style="color:var(--neon-green)">Seven Out! Don't Pass Wins $${bet}</span>`; }
+                    crapsPoint = 0;
+                } else { fb.innerText = `Rolled a basic ${total}. Still seeking target point: ${crapsPoint}`; }
+            }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 7: KENO ENGINE =================
+        let kenoSelected = [];
+        function initKenoGrid() {
+            let container = document.getElementById('keno-grid'); container.innerHTML = '';
+            for(let i=1; i<=80; i++) {
+                let cell = document.createElement('div'); cell.className = 'keno-cell'; cell.innerText = i;
+                cell.onclick = () => {
+                    if(kenoSelected.includes(i)) { kenoSelected = kenoSelected.filter(x=>x!==i); cell.classList.remove('selected'); }
+                    else if(kenoSelected.length < 10) { kenoSelected.push(i); cell.classList.add('selected'); }
+                };
+                container.appendChild(cell);
+            }
+        }
+        function drawKeno() {
+            if(kenoSelected.length === 0) { alert("Pick at least one cell on the grid matrix map."); return; }
+            let bet = getWager('keno-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let drawPool = Array.from({length: 80}, (_, i) => i + 1).sort(() => Math.random() - 0.5).slice(0, 20);
+            let hits = 0;
+            document.querySelectorAll('.keno-cell').forEach(cell => {
+                let val = parseInt(cell.innerText); cell.classList.remove('hit','miss');
+                if(drawPool.includes(val)) {
+                    if(kenoSelected.includes(val)) { cell.classList.add('hit'); hits++; } else { cell.classList.add('miss'); }
+                }
+            });
+            let returnsMap = [0, 1, 3, 10, 25, 60, 150, 300, 800, 1500, 5000];
+            let payoutRatio = returnsMap[hits] || 0;
+            let winAmt = bet * payoutRatio; balance += winAmt;
+            let fb = document.getElementById('keno-fb');
+            if(winAmt > 0) fb.innerHTML = `<span style="color:var(--neon-green)">Matched ${hits} Numbers! Collected $${winAmt}</span>`;
+            else fb.innerHTML = `<span style="color:var(--accent-color)">Matched ${hits} cells. Wager dropped.</span>`;
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 8: CRASH ENGINE =================
+        let crashInterval, crashMult = 1.0, crashIsRunning = false, crashWager = 0;
+        function startCrash() {
+            let btn = document.getElementById('crash-btn');
+            if(!crashIsRunning) {
+                crashWager = getWager('crash-bet'); if(!crashWager) return;
+                balance -= crashWager; updateBalanceDisplay();
+                crashIsRunning = true; crashMult = 1.0;
+                btn.innerText = "CASH OUT"; btn.style.background = 'var(--accent-color)';
+                document.getElementById('crash-fb').innerText = "Multiplier scaling up...";
+                let threshold = Math.random() * 8 + 1.1; // Simulated point
+                crashInterval = setInterval(() => {
+                    crashMult += 0.04 + (crashMult * 0.02);
+                    document.getElementById('crash-multiplier').innerText = crashMult.toFixed(2) + 'x';
+                    if(crashMult >= threshold) {
+                        clearInterval(crashInterval); crashIsRunning = false;
+                        btn.innerText = "Invest / Launch"; btn.style.background = 'var(--neon-green)';
+                        document.getElementById('crash-multiplier').style.color = 'var(--accent-color)';
+                        document.getElementById('crash-fb').innerHTML = `<span style="color:var(--accent-color)">Bust! Rocket exploded at ${crashMult.toFixed(2)}x</span>`;
+                    }
+                }, 120);
+            } else { // Manual Cash Out Click
+                clearInterval(crashInterval); crashIsRunning = false;
+                btn.innerText = "Invest / Launch"; btn.style.background = 'var(--neon-green)';
+                let win = Math.floor(crashWager * crashMult); balance += win;
+                document.getElementById('crash-multiplier').style.color = 'var(--neon-green)';
+                document.getElementById('crash-fb').innerHTML = `<span style="color:var(--neon-green)">Secured Multiplier! Cashed out $${win}</span>`;
+                updateBalanceDisplay();
+            }
+        }
+
+        // ================= GAME 9: WHEEL OF FORTUNE =================
+        const WOF_SECTORS = [
+            {v:0, label:'BANKRUPT', c:'#e94560'}, {v:2, label:'2x Return', c:'#00f0ff'},
+            {v:0.5, label:'0.5x Squeeze', c:'#ffc107'}, {v:5, label:'MEGA 5x', c:'#00ff66'},
+            {v:1.5, label:'1.5x Return', c:'#00f0ff'}, {v:3, label:'Triple 3x', c:'#ff5e7e'}
+        ];
+        function spinWOF() {
+            let bet = getWager('wof-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let step = 0, el = document.getElementById('wof-wheel');
+            let anim = setInterval(() => {
+                let dummy = WOF_SECTORS[Math.floor(Math.random()*WOF_SECTORS.length)];
+                el.innerText = dummy.label; el.style.color = dummy.c;
+                if(++step > 10) {
+                    clearInterval(anim);
+                    let sec = WOF_SECTORS[Math.floor(Math.random()*WOF_SECTORS.length)];
+                    el.innerText = sec.label; el.style.color = sec.c;
+                    let payout = Math.floor(bet * sec.v); balance += payout;
+                    let fb = document.getElementById('wof-fb');
+                    if(payout > bet) fb.innerHTML = `<span style="color:var(--neon-green)">Landed on ${sec.label}! Won $${payout}</span>`;
+                    else if (payout === 0) fb.innerHTML = `<span style="color:var(--accent-color)">Bankrupt! Total stake cleared.</span>`;
+                    else fb.innerHTML = `<span style="color:var(--text-muted)">Partial returns matching ${sec.label}.</span>`;
+                    updateBalanceDisplay();
+                }
+            }, 100);
+        }
+
+        // ================= GAME 10: MINES ENGINE =================
+        let minesMap = [], minesRevealed = 0, minesActive = false, minesWager = 0, minesTargetCount = 3;
+        function startMines() {
+            minesWager = getWager('mines-bet'); if(!minesWager) return;
+            balance -= minesWager; updateBalanceDisplay();
+            minesTargetCount = parseInt(document.getElementById('mines-count').value);
+            minesMap = Array(25).fill('safe');
+            let placed = 0;
+            while(placed < minesTargetCount) {
+                let r = Math.floor(Math.random()*25);
+                if(minesMap[r] !== 'mine') { minesMap[r] = 'mine'; placed++; }
+            }
+            minesRevealed = 0; minesActive = true;
+            document.getElementById('mines-setup').style.display = 'none';
+            document.getElementById('mines-cashout').style.display = 'block';
+            document.getElementById('mines-fb').innerText = "Grid primed. Uncover safer sectors.";
+            renderMinesBoard();
+        }
+        function renderMinesBoard() {
+            let board = document.getElementById('mines-board'); board.innerHTML = '';
+            for(let i=0; i<25; i++) {
+                let tile = document.createElement('div'); tile.className = 'mine-tile'; tile.innerText = '📦';
+                tile.onclick = () => selectMineTile(i, tile);
+                board.appendChild(tile);
+            }
+        }
+        function selectMineTile(idx, tile) {
+            if(!minesActive || tile.classList.contains('revealed-safe')) return;
+            if(minesMap[idx] === 'mine') {
+                minesActive = false; tile.className = 'mine-tile revealed-mine'; tile.innerText = '💣';
+                document.getElementById('mines-fb').innerHTML = `<span style="color:var(--accent-color)">Detonation triggered! Lost $${minesWager}</span>`;
+                document.getElementById('mines-setup').style.display = 'flex';
+                document.getElementById('mines-cashout').style.display = 'none';
+            } else {
+                tile.className = 'mine-tile revealed-safe'; tile.innerText = '💎'; minesRevealed++;
+                let currentMult = 1 + (minesRevealed * (minesTargetCount * 0.12));
+                document.getElementById('mines-fb').innerHTML = `<span style="color:var(--neon-green)">Tile Safe. Accrued Multiplier: ${currentMult.toFixed(2)}x</span>`;
+            }
+        }
+        function cashoutMines() {
+            if(!minesActive || minesRevealed === 0) return;
+            minesActive = false;
+            let currentMult = 1 + (minesRevealed * (minesTargetCount * 0.12));
+            let finalWin = Math.floor(minesWager * currentMult); balance += finalWin;
+            document.getElementById('mines-fb').innerHTML = `<span style="color:var(--neon-green)">Extraction success! Claimed $${finalWin}</span>`;
+            document.getElementById('mines-setup').style.display = 'flex';
+            document.getElementById('mines-cashout').style.display = 'none';
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 11: HI-LO ENGINE =================
+        let hiloCard, hiloWager, hiloMult = 1.0;
+        function startHilo() {
+            hiloWager = getWager('hilo-bet'); if(!hiloWager) return;
+            balance -= hiloWager; updateBalanceDisplay();
+            let deck = pullFreshDeck(); hiloCard = deck.pop();
+            document.getElementById('hilo-card').innerHTML = generateCardDisplayMarkup(hiloCard);
+            document.getElementById('hilo-ctrls-start').style.display = 'none';
+            document.getElementById('hilo-ctrls-game').style.display = 'flex';
+            hiloMult = 1.0; document.getElementById('hilo-fb').innerText = "Predict direction vector of subsequent ranks.";
+        }
+        function playHilo(dir) {
+            let deck = pullFreshDeck(); let nextCard = deck.pop();
+            let win = false;
+            if(dir === 'higher' && nextCard.rank >= hiloCard.rank) win = true;
+            if(dir === 'lower' && nextCard.rank <= hiloCard.rank) win = true;
+            hiloCard = nextCard;
+            document.getElementById('hilo-card').innerHTML = generateCardDisplayMarkup(hiloCard);
+            let fb = document.getElementById('hilo-fb');
+            if(win) {
+                hiloMult += 0.35; fb.innerHTML = `<span style="color:var(--neon-green)">Correct! Stacked Multiplier: ${hiloMult.toFixed(2)}x</span>`;
+            } else {
+                fb.innerHTML = `<span style="color:var(--accent-color)">Incorrect rank evaluation. Dropped $${hiloWager}</span>`;
+                document.getElementById('hilo-ctrls-start').style.display = 'flex';
+                document.getElementById('hilo-ctrls-game').style.display = 'none';
+            }
+        }
+        function cashoutHilo() {
+            let total = Math.floor(hiloWager * hiloMult); balance += total;
+            document.getElementById('hilo-fb').innerHTML = `<span style="color:var(--neon-green)">Cashed Out $${total}</span>`;
+            document.getElementById('hilo-ctrls-start').style.display = 'flex';
+            document.getElementById('hilo-ctrls-game').style.display = 'none';
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 12: PLINKO ENGINE =================
+        function drawPlinkoBoard() {
+            let canvas = document.getElementById('plinko-canvas'); let ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,400,300); ctx.fillStyle = '#3d415c';
+            for(let row=2; row<8; row++) {
+                for(let col=0; col<=row; col++) { ctx.beginPath(); ctx.arc(200 - (row*15) + (col*30), row*30, 3, 0, Math.PI*2); ctx.fill(); }
+            }
+            // Draw baseline labels
+            ctx.fillStyle = '#00ff66'; ctx.font = '10px Arial'; ctx.fillText('2x    0.5x    1.5x    0.5x    2x', 135, 270);
+        }
+        function dropPlinko() {
+            let bet = getWager('plinko-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let canvas = document.getElementById('plinko-canvas'); let ctx = canvas.getContext('2d');
+            let bx = 200, by = 20, vx = 0;
+            let step = 0;
+            let sim = setInterval(() => {
+                drawPlinkoBoard();
+                by += 10; bx += (Math.random() - 0.5) * 18;
+                ctx.fillStyle = 'var(--accent-color)'; ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI*2); ctx.fill();
+                if(by >= 240) {
+                    clearInterval(sim);
+                    let bins = [2, 0.5, 1.5, 0.5, 2];
+                    let chosenBin = Math.floor((bx - 100) / 45);
+                    if(chosenBin < 0) chosenBin = 0; if(chosenBin > 4) chosenBin = 4;
+                    let mult = bins[chosenBin]; let finalWin = Math.floor(bet * mult);
+                    balance += finalWin; updateBalanceDisplay();
+                    document.getElementById('plinko-fb').innerHTML = `<span style="color:var(--neon-green)">Landed inside ${mult}x module container. Returned $${finalWin}</span>`;
+                }
+            }, 30);
+        }
+
+        // ================= GAME 13: SHELL ENGINE =================
+        function liftShell(pick) {
+            let bet = getWager('shell-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let ballIdx = Math.floor(Math.random()*3);
+            let containers = document.querySelectorAll('.shell');
+            containers.forEach((el, i) => el.innerText = (i === ballIdx) ? '💎' : '🥛');
+            let fb = document.getElementById('shell-fb');
+            if(pick === ballIdx) {
+                balance += bet*3; fb.innerHTML = `<span style="color:var(--neon-green)">Precision tracking! Gained $${bet*3}</span>`;
+            } else { fb.innerHTML = `<span style="color:var(--accent-color)">Empty vessel. Asset value cleared.</span>`; }
+            updateBalanceDisplay();
+            setTimeout(() => containers.forEach(el=>el.innerText = '🥛'), 1500);
+        }
+
+        // ================= GAME 14: DICE CHANCE =================
+        function updateDiceChancePayout() {
+            let val = parseInt(document.getElementById('dc-range').value);
+            document.getElementById('dc-target-val').innerText = val;
+            let mult = (99 / (100 - val)).toFixed(2);
+            document.getElementById('dc-payout-display').innerText = mult + 'x';
+        }
+        function rollDiceChance() {
+            let bet = getWager('dc-bet'); if(!bet) return;
+            let target = parseInt(document.getElementById('dc-range').value);
+            let roll = Math.floor(Math.random()*100)+1;
+            let mult = 99 / (100 - target);
+            let fb = document.getElementById('dc-fb');
+            if(roll > target) {
+                let win = Math.floor(bet * mult); balance += win;
+                fb.innerHTML = `<span style="color:var(--neon-green)">Rolled ${roll} (Passed > ${target})! Paid out $${win}</span>`;
+            } else {
+                balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">Rolled ${roll} (Failed > ${target}). Lost $${bet}</span>`;
+            }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 15: COIN FLIP =================
+        let coinChoice = 'Heads';
+        function selectCoinSide(side) {
+            coinChoice = side;
+            document.getElementById('coin-h').classList.toggle('selected', side==='Heads');
+            document.getElementById('coin-t').classList.toggle('selected', side==='Tails');
+        }
+        function flipCoin() {
+            let bet = getWager('coin-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let face = Math.random() > 0.5 ? 'Heads' : 'Tails';
+            document.getElementById('coin-graphic').innerText = face;
+            let fb = document.getElementById('coin-fb');
+            if(coinChoice === face) {
+                balance += bet*2; fb.innerHTML = `<span style="color:var(--neon-green)">Result matched: ${face}! Paid $${bet*2}</span>`;
+            } else { fb.innerHTML = `<span style="color:var(--accent-color)">Landed on ${face}. Lost $${bet}</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 16: RED OR BLACK CARDS =================
+        let rbChoice = 'Red';
+        function selectRBSide(c) {
+            rbChoice = c;
+            document.getElementById('rb-r').classList.toggle('selected', c==='Red');
+            document.getElementById('rb-b').classList.toggle('selected', c==='Black');
+        }
+        function drawRedBlack() {
+            let bet = getWager('rb-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let deck = pullFreshDeck(); let card = deck.pop();
+            let cardDisplay = document.getElementById('rb-card-display');
+            cardDisplay.style.visibility = 'visible'; cardDisplay.innerHTML = generateCardDisplayMarkup(card);
+            let cardColor = card.isRed ? 'Red' : 'Black';
+            let fb = document.getElementById('rb-fb');
+            if(rbChoice === cardColor) {
+                balance += bet*2; fb.innerHTML = `<span style="color:var(--neon-green)">Color identity matched: ${cardColor}! Won $${bet*2}</span>`;
+            } else { fb.innerHTML = `<span style="color:var(--accent-color)">Drawn card was ${cardColor}. Lost $${bet}</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 17: ROCK PAPER SCISSORS =================
+        let rpsChoice = 'Rock';
+        function selectRPS(c) {
+            ['rps-r','rps-p','rps-s'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+            document.getElementById(`rps-${c.toLowerCase()[0]}`).classList.add('selected'); rpsChoice = c;
+        }
+        function playRPS() {
+            let bet = getWager('rps-bet'); if(!bet) return;
+            let pool = ['Rock', 'Paper', 'Scissors']; let house = pool[Math.floor(Math.random()*3)];
+            let fb = document.getElementById('rps-fb');
+            let report = `[You: ${rpsChoice}] vs [House: ${house}] -> `;
+            if(rpsChoice === house) { fb.innerHTML = `<span style="color:var(--neon-blue)">${report} Standoff Tie.</span>`; }
+            else if((rpsChoice==='Rock'&&house==='Scissors') || (rpsChoice==='Paper'&&house==='Rock') || (rpsChoice==='Scissors'&&house==='Paper')) {
+                balance += bet; fb.innerHTML = `<span style="color:var(--neon-green)">${report} Dominance won $${bet}</span>`;
+            } else { balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">${report} Opponent countered. Lost $${bet}</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 18: CASINO WAR =================
+        function playWar() {
+            let bet = getWager('war-bet'); if(!bet) return;
+            let deck = pullFreshDeck(); let pCard = deck.pop(), dCard = deck.pop();
+            document.getElementById('war-player-card').innerHTML = generateCardDisplayMarkup(pCard);
+            document.getElementById('war-house-card').innerHTML = generateCardDisplayMarkup(dCard);
+            let fb = document.getElementById('war-fb');
+            if(pCard.rank > dCard.rank) { balance += bet; fb.innerHTML = `<span style="color:var(--neon-green)">Superior rank value! Gained $${bet}</span>`; }
+            else if (dCard.rank > pCard.rank) { balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">House hand ranks higher. Lost $${bet}</span>`; }
+            else { balance -= Math.floor(bet*0.5); fb.innerHTML = `<span style="color:var(--accent-color)">War tie! Surrendered half stake ($${Math.floor(bet*0.5)}) per standard settlement rules.</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 19: CARIBBEAN STUD =================
+        let csDeck, csPlayerHand, csDealerHand, csWager;
+        function startCaribbean() {
+            csWager = getWager('cs-bet'); if(!csWager) return;
+            balance -= csWager; updateBalanceDisplay();
+            csDeck = pullFreshDeck();
+            csPlayerHand = [csDeck.pop(), csDeck.pop(), csDeck.pop(), csDeck.pop(), csDeck.pop()];
+            csDealerHand = [csDeck.pop(), csDeck.pop(), csDeck.pop(), csDeck.pop(), csDeck.pop()];
+            let pStr = '', dStr = generateCardDisplayMarkup(csDealerHand[0]) + '<div class="card" style="background:#444"><div>?</div></div>'.repeat(4);
+            csPlayerHand.forEach(c => pStr += generateCardDisplayMarkup(c));
+            document.getElementById('cs-p-cards').innerHTML = pStr; document.getElementById('cs-d-cards').innerHTML = dStr;
+            document.getElementById('cs-ctrl-start').style.display = 'none';
+            document.getElementById('cs-ctrl-play').style.display = 'flex';
+        }
+        function playCaribbeanCall(wantsCall) {
+            document.getElementById('cs-ctrl-start').style.display = 'flex';
+            document.getElementById('cs-ctrl-play').style.display = 'none';
+            let fb = document.getElementById('cs-fb');
+            if(!wantsCall) { fb.innerHTML = `<span style="color:var(--accent-color)">Folded hand. Ante asset surrendered.</span>`; return; }
+            if(balance < csWager * 2) { alert("Insufficient funds for Call wager expansion."); return; }
+            balance -= csWager * 2;
+            let dStr = ''; csDealerHand.forEach(c => dStr += generateCardDisplayMarkup(c));
+            document.getElementById('cs-d-cards').innerHTML = dStr;
+            // Native micro evaluation profiling
+            let pHigh = csPlayerHand.sort((a,b)=>b.rank-a.rank)[0].rank;
+            let dHigh = csDealerHand.sort((a,b)=>b.rank-a.rank)[0].rank;
+            if(pHigh >= dHigh) {
+                let win = csWager * 3; balance += win;
+                fb.innerHTML = `<span style="color:var(--neon-green)">Call cleared! Hand beats dealer. Returned $${win}</span>`;
+            } else { fb.innerHTML = `<span style="color:var(--accent-color)">Dealer hand holds stronger components. Loss triggered.</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 20: HORSE RACING =================
+        let racingTargetHorse = 0;
+        function selectHorse(idx) {
+            [0,1,2,3].forEach(i=>document.getElementById(`horse-${i}`).classList.remove('selected'));
+            document.getElementById(`horse-${idx}`).classList.add('selected'); racingTargetHorse = idx;
+        }
+        function drawRacingBoard() {
+            let canvas = document.getElementById('racing-canvas'); let ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,450,180); ctx.fillStyle = '#222533'; ctx.fillRect(0,0,450,180);
+            for(let i=1; i<4; i++) { ctx.strokeStyle = '#3d415c'; ctx.beginPath(); ctx.moveTo(0, i*45); ctx.lineTo(450, i*45); ctx.stroke(); }
+        }
+        function startRace() {
+            let bet = getWager('racing-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            document.getElementById('racing-btn').disabled = true;
+            let pos = [10, 10, 10, 10];
+            let loop = setInterval(() => {
+                let canvas = document.getElementById('racing-canvas'); let ctx = canvas.getContext('2d');
+                drawRacingBoard();
+                let colors = ['#00f0ff', '#e94560', '#ffd700', '#00ff66'];
+                for(let i=0; i<4; i++) {
+                    pos[i] += Math.random() * 12 + (i === 3 ? 0.2 : 0.5); // Add dynamic volatility weighting
+                    ctx.fillStyle = colors[i]; ctx.beginPath(); ctx.arc(pos[i], (i*45)+22, 8, 0, Math.PI*2); ctx.fill();
+                }
+                if(pos.some(p => p >= 430)) {
+                    clearInterval(loop); document.getElementById('racing-btn').disabled = false;
+                    let winner = pos.indexOf(Math.max(...pos));
+                    let multipliers = [2, 3, 5, 10];
+                    let fb = document.getElementById('racing-fb');
+                    if(racingTargetHorse === winner) {
+                        let win = bet * multipliers[winner]; balance += win;
+                        fb.innerHTML = `<span style="color:var(--neon-green)">Derby won! Your choice hit first place. Payout $${win}</span>`;
+                    } else { fb.innerHTML = `<span style="color:var(--accent-color)">Horse ${winner+1} dominated the track. Wager collapsed.</span>`; }
+                    updateBalanceDisplay();
+                }
+            }, 40);
+        }
+
+        // ================= GAME 21: DRIFT LUCKY WHEEL =================
+        function spinDrift() {
+            let bet = getWager('drift-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let steps = 0, el = document.getElementById('drift-display');
+            let anim = setInterval(() => {
+                el.innerText = '🚀 ' + (Math.random()*4).toFixed(1) + 'x';
+                if(++steps > 10) {
+                    clearInterval(anim);
+                    let wheels = [0, 0.2, 0.5, 1.2, 2.0, 4.5];
+                    let mult = wheels[Math.floor(Math.random()*wheels.length)];
+                    el.innerText = '🚀 ' + mult + 'x';
+                    let payout = Math.floor(bet * mult); balance += payout;
+                    let fb = document.getElementById('drift-fb');
+                    if(mult >= 1.0) fb.innerHTML = `<span style="color:var(--neon-green)">Sector cleared. Paid out $${payout}</span>`;
+                    else fb.innerHTML = `<span style="color:var(--accent-color)">Under-index crash footprint. Retained $${payout}</span>`;
+                    updateBalanceDisplay();
+                }
+            }, 80);
+        }
+
+        // ================= GAME 22: THIMBLE MULTIPLIER =================
+        function selectThimble(pick) {
+            let bet = getWager('thimble-bet'); if(!bet) return;
+            balance -= bet; updateBalanceDisplay();
+            let winningBox = Math.floor(Math.random()*3);
+            let fb = document.getElementById('thimble-fb');
+            if(pick === winningBox) {
+                let win = Math.floor(bet * 2.5); balance += win;
+                fb.innerHTML = `<span style="color:var(--neon-green)">Box held 2.5x prize core module! Received $${win}</span>`;
+            } else { fb.innerHTML = `<span style="color:var(--accent-color)">Box was completely empty. Lost $${bet}</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // ================= GAME 23: DIAMOND SLOT DUEL =================
+        function playDiamondDuel() {
+            let bet = getWager('dia-bet'); if(!bet) return;
+            let pools = ['💎', '✨', '🌸', '🔥', '💩'];
+            let hPick = pools[Math.floor(Math.random()*pools.length)];
+            let pPick = pools[Math.floor(Math.random()*pools.length)];
+            document.getElementById('dia-house').innerText = hPick; document.getElementById('dia-player').innerText = pPick;
+            let hRank = pools.indexOf(hPick), pRank = pools.indexOf(pPick);
+            let fb = document.getElementById('dia-fb');
+            if(pRank < hRank) { // Lower index indicates premium rarity
+                balance += bet; fb.innerHTML = `<span style="color:var(--neon-green)">Rarity dominance achieved! Won $${bet}</span>`;
+            } else if (hRank < pRank) { balance -= bet; fb.innerHTML = `<span style="color:var(--accent-color)">House material grade outclassed yours. Lost $${bet}</span>`; }
+            else { fb.innerHTML = `<span style="color:var(--neon-blue)">Identical molecular structures. Push.</span>`; }
+            updateBalanceDisplay();
+        }
+
+        // Execution Priming Elements
+        initKenoGrid();
+    </script>
+</body>
+</html>
