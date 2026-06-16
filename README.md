@@ -8,8 +8,9 @@ Welcome to the ultimate lightweight, high-performance virtual arcade. Built enti
 
 ---
 
-## Check out the [GitHub Docs](https://docs.github.com) for more information.
+## Check out the [Casino](https://godslayer82.github.io/casino-/) to play!
 
+---
 
 ## ⚡ Key Architecture Highlights
 * **Zero Dependencies:** Pure HTML5, modular Vanilla JavaScript, and advanced CSS Grid layouts. No frameworks, no node modules.
